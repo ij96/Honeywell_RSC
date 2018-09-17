@@ -73,10 +73,10 @@
 /*
  * ADC Configuration math
  */
-#define RSC_ADC_CONDIG_00                      61
-#define RSC_ADC_CONDIG_01                      63
-#define RSC_ADC_CONDIG_02                      65
-#define RSC_ADC_CONDIG_03                      67
+#define RSC_ADC_CONFIG_00                      61
+#define RSC_ADC_CONFIG_01                      63
+#define RSC_ADC_CONFIG_02                      65
+#define RSC_ADC_CONFIG_03                      67
 
 /*
  * Offset Coefficient matrix

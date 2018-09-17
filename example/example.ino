@@ -31,28 +31,35 @@ void setup() {
   // open SPI communication
   SPI.begin();
 
-  // read and print constants that are stored in EEPROM
-  rsc.get_catalog_listing();
-  rsc.get_serial_number();
-  rsc.get_pressure_range();
-  rsc.get_pressure_minimum();
-  rsc.get_pressure_unit();
-  rsc.get_pressure_type();
+  // initialse pressure sensor
+  rsc.init();
 
-  Serial.print("catalog listing: ");
+  // print sensor information
+  Serial.println();
+  Serial.print("catalog listing:\t");
   Serial.println(rsc.catalog_listing());
-  Serial.print("serial number: ");
+  Serial.print("serial number:\t\t");
   Serial.println(rsc.serial_number());
-  Serial.print("pressure range: ");
+  Serial.print("pressure range:\t\t");
   Serial.println(rsc.pressure_range());
-  Serial.print("pressure minimum: ");
+  Serial.print("pressure minimum:\t");
   Serial.println(rsc.pressure_minimum());
-  Serial.print("pressure unit: ");
-  Serial.println(rsc.pressure_unit());
-  Serial.print("pressure type: ");
-  Serial.println(rsc.pressure_type());
+  Serial.print("pressure unit:\t\t");
+  Serial.println(rsc.pressure_unit_name());
+  Serial.print("pressure type:\t\t");
+  Serial.println(rsc.pressure_type_name());
+  Serial.println();
+  
+  // measure temperature
+  Serial.print("temperature: ");
+  Serial.println(rsc.get_temperature());
+  Serial.println();
+  delay(5);
 }
 
 void loop() {
-
+  // measure pressure
+  Serial.print("pressure: ");
+  Serial.println(rsc.get_pressure());
+  delay(1000);
 }
