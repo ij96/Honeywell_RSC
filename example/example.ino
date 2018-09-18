@@ -49,7 +49,7 @@ void setup() {
   Serial.print("pressure type:\t\t");
   Serial.println(rsc.pressure_type_name());
   Serial.println();
-  
+
   // measure temperature
   Serial.print("temperature: ");
   Serial.println(rsc.get_temperature());

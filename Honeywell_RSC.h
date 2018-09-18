@@ -75,7 +75,7 @@ private:
 
   // for calculating compensated pressure
   float _coeff_matrix[RSC_COEFF_T_ROW_NO][RSC_COEFF_T_COL_NO];
-  uint32_t _t_raw;
+  int32_t _t_raw;
 };
 
 #endif // HONEYWELL_RSC_H

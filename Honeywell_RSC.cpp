@@ -263,31 +263,26 @@ float Honeywell_RSC::get_pressure() {
   // reads uncompensated pressure from ADC, then use temperature reading to convert it to compensated pressure
   // refer to datasheet section 3.6 ADC Programming and Read Sequence – Pressure Reading
 
-  // TODO: check calculation as the results do not seem correct
-
+  // read the 24 bits uncompensated pressure
   uint8_t sec_arr[3] = {0};
-
   adc_read(PRESSURE, sec_arr);
-
-  // the 24 bits represent uncompensated pressure
-  uint32_t p_raw = ((uint32_t)sec_arr[0] << 16) | ((uint32_t)sec_arr[1] << 8) | (uint32_t)sec_arr[2];
-
-  //  Serial.print("p_raw: ");
-  //  Serial.print(p_raw, HEX);
-  //  Serial.print(" ");
+  int32_t p_raw = ((uint32_t)sec_arr[0] << 16) | ((uint32_t)sec_arr[1] << 8) | (uint32_t)sec_arr[2];
+  // check if the 24 bit reading is negative, by checking if the MSB is 1
+  // if negative, change the first byte of p_raw to 0xFF so it will be recognised as a negative number
+  if (sec_arr[0] >> 7 == 1) {
+    p_raw |= 0xFF000000;
+  }
 
   // calculate compensated pressure
   // refer to datasheet section 1.3 Compensation Mathematics
-  uint32_t t_raw = _t_raw;
-
-  float x = (_coeff_matrix[0][3] * t_raw * t_raw * t_raw);
-  float y = (_coeff_matrix[0][2] * t_raw * t_raw);
-  float z = (_coeff_matrix[0][1] * t_raw);
+  float x = (_coeff_matrix[0][3] * _t_raw * _t_raw * _t_raw);
+  float y = (_coeff_matrix[0][2] * _t_raw * _t_raw);
+  float z = (_coeff_matrix[0][1] * _t_raw);
   float p_int1 = p_raw - (x + y + z + _coeff_matrix[0][0]);
 
-  x = (_coeff_matrix[1][3] * t_raw * t_raw * t_raw);
-  y = (_coeff_matrix[1][2] * t_raw * t_raw);
-  z = (_coeff_matrix[1][1] * t_raw);
+  x = (_coeff_matrix[1][3] * _t_raw * _t_raw * _t_raw);
+  y = (_coeff_matrix[1][2] * _t_raw * _t_raw);
+  z = (_coeff_matrix[1][1] * _t_raw);
   float p_int2 = p_int1 / (x + y + z + _coeff_matrix[1][0]);
 
   x = (_coeff_matrix[2][3] * p_int2 * p_int2 * p_int2);
