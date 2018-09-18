@@ -31,6 +31,9 @@ void setup() {
   // open SPI communication
   SPI.begin();
 
+  // allowtime to setup SPI
+  delay(5);
+
   // initialse pressure sensor
   rsc.init();
 

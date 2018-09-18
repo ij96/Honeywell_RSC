@@ -59,7 +59,7 @@ void Honeywell_RSC::select_adc() {
   // make sure CS_EE is not active
   digitalWrite(_cs_ee_pin, HIGH);
 
-  // the EEPROM interface operates in SPI mode 1 (CPOL = 0, CPHA = 1)
+  // the ADC interface operates in SPI mode 1 (CPOL = 0, CPHA = 1)
   SPI.beginTransaction(SPISettings(1250000, MSBFIRST, SPI_MODE1));
 }
 
@@ -266,12 +266,8 @@ float Honeywell_RSC::get_pressure() {
   // read the 24 bits uncompensated pressure
   uint8_t sec_arr[3] = {0};
   adc_read(PRESSURE, sec_arr);
-  int32_t p_raw = ((uint32_t)sec_arr[0] << 16) | ((uint32_t)sec_arr[1] << 8) | (uint32_t)sec_arr[2];
-  // check if the 24 bit reading is negative, by checking if the MSB is 1
-  // if negative, change the first byte of p_raw to 0xFF so it will be recognised as a negative number
-  if (sec_arr[0] >> 7 == 1) {
-    p_raw |= 0xFF000000;
-  }
+  int32_t p_raw = ((uint32_t)sec_arr[0] << 24) | ((uint32_t)sec_arr[1] << 16) | ((uint32_t)sec_arr[2] << 8);
+  p_raw /= 256; // this make sure that the sign of p_raw is the same as that of the 24-bit reading
 
   // calculate compensated pressure
   // refer to datasheet section 1.3 Compensation Mathematics

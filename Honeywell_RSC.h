@@ -46,21 +46,21 @@ public:
   void set_mode(RSC_MODE mode);
   
   // getter functions
-  char* catalog_listing() {return _catalog_listing;}
-  char* serial_number() {return _serial_number;}
-  float pressure_range() {return _pressure_range;}
-  float pressure_minimum() {return _pressure_minimum;}
-  char* pressure_unit_name() {return _pressure_unit_name;}
-  char* pressure_type_name() {return _pressure_type_name;}
+  char* catalog_listing() const {return _catalog_listing;}
+  char* serial_number() const {return _serial_number;}
+  float pressure_range() const {return _pressure_range;}
+  float pressure_minimum() const {return _pressure_minimum;}
+  char* pressure_unit_name() const {return _pressure_unit_name;}
+  char* pressure_type_name() const {return _pressure_type_name;}
 
 private:
   // physical pin connections
-  int _drdy_pin;
-  int _cs_ee_pin;
-  int _cs_adc_pin;
+  uint8_t _drdy_pin;
+  uint8_t _cs_ee_pin;
+  uint8_t _cs_adc_pin;
 
   // from EEPROM
-  char _catalog_listing[RSC_SENSOR_NAME_LEN];
+  unsigned char _catalog_listing[RSC_SENSOR_NAME_LEN];
   char _serial_number[RSC_SENSOR_NUMBER_LEN];
   float _pressure_range;
   float _pressure_minimum;
