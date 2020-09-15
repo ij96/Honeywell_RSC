@@ -142,7 +142,7 @@
 #define RSC_SENSOR_NUMBER_LEN                     12
 #define RSC_PRESSURE_RANGE_LEN                    4
 #define RSC_PRESSURE_MINIMUM_LEN                  4
-#define RSC_PRESSURE_UNIT_LEN                     6
+#define RSC_PRESSURE_UNIT_LEN                     5
 #define RSC_SENSOR_TYPE_LEN                       1
 // total types of coefficients
 #define RSC_COEFF_T_ROW_NO                        3
