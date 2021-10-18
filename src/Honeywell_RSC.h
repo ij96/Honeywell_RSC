@@ -80,6 +80,16 @@ private:
   int32_t _t_raw;
 };
 
-void print_array_from_memory(unsigned char const * const start, size_t length);
+template<typename T>
+void print_array_from_memory(T const * const start, size_t length){
+  Serial.print(F("DBG "));
+  for (size_t i=0; i<length; i++){
+    Serial.print(*(start+i), HEX);
+    Serial.print(F("="));
+    Serial.print(*(start+i));
+    Serial.print(F(" | "));
+  }
+  Serial.println(F(""));
+}
 
 #endif // HONEYWELL_RSC_H
