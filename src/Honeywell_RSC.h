@@ -80,4 +80,6 @@ private:
   int32_t _t_raw;
 };
 
+void print_array_from_memory(unsigned char const * const start, size_t length);
+
 #endif // HONEYWELL_RSC_H

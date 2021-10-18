@@ -125,14 +125,8 @@ void Honeywell_RSC::get_pressure_unit() {
   eeprom_read(RSC_PRESSURE_UNIT_MSB, RSC_PRESSURE_UNIT_LEN, buf);
   buf[RSC_PRESSURE_UNIT_LEN - 1] = '\0';
 
-  Serial.print(F("content of buf from eeprom_read of pressure unit: | "));
-  for (size_t i=0; i<RSC_PRESSURE_UNIT_LEN; i++){
-    Serial.print(buf[i], HEX);
-    Serial.print(F("="));
-    Serial.print(buf[i]);
-    Serial.print(F(" | "))
-  }
-  Serial.println(F(""));
+  Serial.println(F("DBG: content of buf from eeprom_read of pressure unit: "));
+  print_array_from_memory(&(buf[0]), RSC_PRESSURE_UNIT_LEN);
 
   if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
     _pressure_unit = INH2O;
@@ -160,11 +154,18 @@ void Honeywell_RSC::get_pressure_unit() {
     _pressure_unit = PSI;
     strncpy(_pressure_unit_name, "psi", name_buff_sizes);
   }
+
+  Serial.println(F("DBG: content of _pressure_unit_name: "));
+  print_array_from_memory(&(_pressure_unit_name[0]), name_buff_sizes);
 }
 
 void Honeywell_RSC::get_pressure_type() {
   unsigned char buf[RSC_SENSOR_TYPE_LEN];
   eeprom_read(RSC_PRESSURE_REFERENCE, RSC_SENSOR_TYPE_LEN, buf);
+
+  Serial.println(F("DBG: content of buf from eeprom_read of sensor type: "));
+  print_array_from_memory(&(buf[0]), RSC_SENSOR_TYPE_LEN);
+
   switch (buf[0]) {
     case 'D':
       _pressure_type = DIFFERENTIAL;
@@ -182,6 +183,9 @@ void Honeywell_RSC::get_pressure_type() {
       _pressure_type = DIFFERENTIAL;
       strncpy(_pressure_type_name, "differential", name_buff_sizes);
   }
+
+  Serial.println(F("DBG: content of _pressure_type_name: "));
+  print_array_from_memory(&(_pressure_type_name[0]), name_buff_sizes);
 }
 
 void Honeywell_RSC::get_coefficients() {
@@ -441,5 +445,16 @@ void Honeywell_RSC::setup_adc(uint8_t* adc_init_values) {
   uint8_t command[5] = {RSC_ADC_RESET_COMMAND, adc_init_values[0], adc_init_values[1], adc_init_values[2], adc_init_values[3]};
   adc_write(0, 5, command);
   delay(5);
+}
+
+void print_array_from_memory(unsigned char const * const start, size_t length){
+  Serial.print(F("DBG "));
+  for (size_t i=0; i<length; i++){
+    Serial.print(*(start+i), HEX);
+    Serial.print(F("="));
+    Serial.print(*(start+i));
+    Serial.print(F(" | "))
+  }
+  Serial.println(F(""));
 }
 
