@@ -447,14 +447,4 @@ void Honeywell_RSC::setup_adc(uint8_t* adc_init_values) {
   delay(5);
 }
 
-void print_array_from_memory(char const * const start, size_t length){
-  Serial.print(F("DBG "));
-  for (size_t i=0; i<length; i++){
-    Serial.print(*(start+i), HEX);
-    Serial.print(F("="));
-    Serial.print(*(start+i));
-    Serial.print(F(" | "));
-  }
-  Serial.println(F(""));
-}
 
