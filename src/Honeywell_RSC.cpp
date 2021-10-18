@@ -124,6 +124,16 @@ void Honeywell_RSC::get_pressure_unit() {
   unsigned char buf[RSC_PRESSURE_UNIT_LEN] = {0};
   eeprom_read(RSC_PRESSURE_UNIT_MSB, RSC_PRESSURE_UNIT_LEN, buf);
   buf[RSC_PRESSURE_UNIT_LEN - 1] = '\0';
+
+  Serial.print(F("content of buf from eeprom_read of pressure unit: | "));
+  for (size_t i=0; i<RSC_PRESSURE_UNIT_LEN; i++){
+    Serial.print(buf[i], HEX);
+    Serial.print(F("="));
+    Serial.print(buf[i]);
+    Serial.print(F(" | "))
+  }
+  Serial.println(F(""));
+
   if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
     _pressure_unit = INH2O;
     strncpy(_pressure_unit_name, "inH20", name_buff_sizes);
