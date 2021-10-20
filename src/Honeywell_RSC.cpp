@@ -126,31 +126,31 @@ void Honeywell_RSC::get_pressure_unit() {
   buf[RSC_PRESSURE_UNIT_LEN - 1] = '\0';
 
   Serial.println(F("DBG: content of buf from eeprom_read of pressure unit: "));
-  print_array_from_memory(&(buf[0]), RSC_PRESSURE_UNIT_LEN);
+  print_array_from_memory((char const * const)&(buf[0]), RSC_PRESSURE_UNIT_LEN);
 
-  if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
+  if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
     _pressure_unit = INH2O;
     strncpy(_pressure_unit_name, "inH20", name_buff_sizes);
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
-    if (buf[RSC_PRESSURE_UNIT_LEN - 4] == 'K') {
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
+    if ((char)buf[RSC_PRESSURE_UNIT_LEN - 4] == 'K') {
       _pressure_unit = KPASCAL;
       strncpy(_pressure_unit_name, "kilopascal", name_buff_sizes);
-    } else if (buf[RSC_PRESSURE_UNIT_LEN - 4] == 'M') {
+    } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 4] == 'M') {
       _pressure_unit = MPASCAL;
       strncpy(_pressure_unit_name, "megapascal", name_buff_sizes);
     } else {
       _pressure_unit = PASCAL;
       strncpy(_pressure_unit_name, "pascal", name_buff_sizes);
     }
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'r') {
-    if (buf[RSC_PRESSURE_UNIT_LEN - 5] == 'm') {
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'r') {
+    if ((char)buf[RSC_PRESSURE_UNIT_LEN - 5] == 'm') {
       _pressure_unit = mBAR;
       strncpy(_pressure_unit_name, "millibar", name_buff_sizes);
     } else {
       _pressure_unit = BAR;
       strncpy(_pressure_unit_name, "bar", name_buff_sizes);
     }
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'i') {
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'i') {
     _pressure_unit = PSI;
     strncpy(_pressure_unit_name, "psi", name_buff_sizes);
   }
@@ -164,7 +164,7 @@ void Honeywell_RSC::get_pressure_type() {
   eeprom_read(RSC_PRESSURE_REFERENCE, RSC_SENSOR_TYPE_LEN, buf);
 
   Serial.println(F("DBG: content of buf from eeprom_read of sensor type: "));
-  print_array_from_memory(&(buf[0]), RSC_SENSOR_TYPE_LEN);
+  print_array_from_memory((char const * const)&(buf[0]), RSC_SENSOR_TYPE_LEN);
 
   switch (buf[0]) {
     case 'D':
@@ -445,6 +445,38 @@ void Honeywell_RSC::setup_adc(uint8_t* adc_init_values) {
   uint8_t command[5] = {RSC_ADC_RESET_COMMAND, adc_init_values[0], adc_init_values[1], adc_init_values[2], adc_init_values[3]};
   adc_write(0, 5, command);
   delay(5);
+}
+
+void Honeywell_RSC::print_catalog_listing(void){
+  Serial.print(F("catalog_listing: "));
+  for (size_t i=0; i<RSC_SENSOR_NAME_LEN; i++){
+    Serial.print((char)(_catalog_listing[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_serial_number(void){
+  Serial.print(F("serial_number: "));
+  for (size_t i=0; i<RSC_SENSOR_NUMBER_LEN; i++){
+    Serial.print((char)(_serial_number[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_pressure_unit_name(void){
+  Serial.print(F("pressure_unit: "));
+  for (size_t i=0; i<name_buff_sizes; i++){
+    Serial.print((char)(_pressure_unit_name[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_pressure_type_name(void){
+  Serial.print(F("pressure_type_name: "));
+  for (size_t i=0; i<name_buff_sizes; i++){
+    Serial.print((char)(_pressure_type_name[i]));
+  }
+  Serial.println();
 }
 
 

@@ -52,6 +52,10 @@ public:
   float pressure_minimum() const {return _pressure_minimum;}
   const char* pressure_unit_name() const {return &_pressure_unit_name[0];}
   const char* pressure_type_name() const {return &_pressure_type_name[0];}
+  void print_catalog_listing(void);
+  void print_serial_number(void);
+  void print_pressure_unit_name(void);
+  void print_pressure_type_name(void);
 
 private:
   static constexpr size_t name_buff_sizes = 32;
@@ -84,6 +88,7 @@ template<typename T>
 void print_array_from_memory(T const * const start, size_t length){
   Serial.print(F("DBG "));
   for (size_t i=0; i<length; i++){
+    Serial.print(F("0x"));
     Serial.print(*(start+i), HEX);
     Serial.print(F("="));
     Serial.print(*(start+i));
