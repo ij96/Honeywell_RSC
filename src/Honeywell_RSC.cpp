@@ -128,7 +128,13 @@ void Honeywell_RSC::get_pressure_unit() {
   Serial.println(F("DBG: content of buf from eeprom_read of pressure unit: "));
   print_array_from_memory((char const * const)&(buf[0]), RSC_PRESSURE_UNIT_LEN);
 
-  if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
+  // option 1: just copy
+  for (size_t i=0; i<RSC_PRESSURE_UNIT_LEN; i++){
+    _pressure_unit_name[i] = (char)buf[i];
+  }
+
+  // option 2: try to match; I think the logics here are at least in part broken
+  if ((char)buf[3] == '2') {
     _pressure_unit = INH2O;
     strncpy(_pressure_unit_name, "inH20", name_buff_sizes);
   } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
