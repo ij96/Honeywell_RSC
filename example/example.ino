@@ -39,22 +39,18 @@ void setup() {
 
   // print sensor information
   Serial.println();
-  Serial.print("catalog listing:\t");
-  Serial.println(rsc.catalog_listing());
-  Serial.print("serial number:\t\t");
-  Serial.println(rsc.serial_number());
-  Serial.print("pressure range:\t\t");
+  rsc.print_catalog_listing();
+  rsc.print_serial_number();
+  Serial.print(F("pressure range:\t\t"));
   Serial.println(rsc.pressure_range());
-  Serial.print("pressure minimum:\t");
+  Serial.print(F("pressure minimum:\t"));
   Serial.println(rsc.pressure_minimum());
-  Serial.print("pressure unit:\t\t");
-  Serial.println(rsc.pressure_unit_name());
-  Serial.print("pressure type:\t\t");
-  Serial.println(rsc.pressure_type_name());
+  rsc.print_pressure_unit_name();
+  rsc.print_pressure_type_name();
   Serial.println();
 
   // measure temperature
-  Serial.print("temperature: ");
+  Serial.print(F("temperature: "));
   Serial.println(rsc.get_temperature());
   Serial.println();
   delay(5);
@@ -62,7 +58,7 @@ void setup() {
 
 void loop() {
   // measure pressure
-  Serial.print("pressure: ");
+  Serial.print(F("pressure: "));
   Serial.println(rsc.get_pressure());
   delay(1000);
 }

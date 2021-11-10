@@ -46,14 +46,20 @@ public:
   void set_mode(RSC_MODE mode);
   
   // getter functions
-  char* catalog_listing() const {return _catalog_listing;}
-  char* serial_number() const {return _serial_number;}
+  const unsigned char* catalog_listing() const {return &_catalog_listing[0];}
+  const unsigned char* serial_number() const {return &_serial_number[0];}
   float pressure_range() const {return _pressure_range;}
   float pressure_minimum() const {return _pressure_minimum;}
-  char* pressure_unit_name() const {return _pressure_unit_name;}
-  char* pressure_type_name() const {return _pressure_type_name;}
+  const char* pressure_unit_name() const {return &_pressure_unit_name[0];}
+  const char* pressure_type_name() const {return &_pressure_type_name[0];}
+  void print_catalog_listing(void);
+  void print_serial_number(void);
+  void print_pressure_unit_name(void);
+  void print_pressure_type_name(void);
 
 private:
+  static constexpr size_t name_buff_sizes = 32;
+
   // physical pin connections
   uint8_t _drdy_pin;
   uint8_t _cs_ee_pin;
@@ -61,13 +67,13 @@ private:
 
   // from EEPROM
   unsigned char _catalog_listing[RSC_SENSOR_NAME_LEN];
-  char _serial_number[RSC_SENSOR_NUMBER_LEN];
+  unsigned char _serial_number[RSC_SENSOR_NUMBER_LEN];
   float _pressure_range;
   float _pressure_minimum;
   PRESSURE_U _pressure_unit;
-  char* _pressure_unit_name;
+  char _pressure_unit_name[name_buff_sizes];
   PRESSURE_T _pressure_type;
-  char* _pressure_type_name;
+  char _pressure_type_name[name_buff_sizes];
 
   // ADC
   RSC_DATA_RATE _data_rate;
@@ -77,5 +83,18 @@ private:
   float _coeff_matrix[RSC_COEFF_T_ROW_NO][RSC_COEFF_T_COL_NO];
   int32_t _t_raw;
 };
+
+template<typename T>
+void print_array_from_memory(T const * const start, size_t length){
+  Serial.print(F("DBG "));
+  for (size_t i=0; i<length; i++){
+    Serial.print(F("0x"));
+    Serial.print(*(start+i), HEX);
+    Serial.print(F("="));
+    Serial.print(*(start+i));
+    Serial.print(F(" | "));
+  }
+  Serial.println(F(""));
+}
 
 #endif // HONEYWELL_RSC_H

@@ -121,57 +121,77 @@ void Honeywell_RSC::get_pressure_minimum() {
 }
 
 void Honeywell_RSC::get_pressure_unit() {
-  char buf[RSC_PRESSURE_UNIT_LEN] = {0};
+  unsigned char buf[RSC_PRESSURE_UNIT_LEN] = {0};
   eeprom_read(RSC_PRESSURE_UNIT_MSB, RSC_PRESSURE_UNIT_LEN, buf);
   buf[RSC_PRESSURE_UNIT_LEN - 1] = '\0';
-  if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'O') {
+
+  Serial.println(F("DBG: content of buf from eeprom_read of pressure unit: "));
+  print_array_from_memory((char const * const)&(buf[0]), RSC_PRESSURE_UNIT_LEN);
+
+  // option 1: just copy
+  for (size_t i=0; i<RSC_PRESSURE_UNIT_LEN; i++){
+    _pressure_unit_name[i] = (char)buf[i];
+  }
+
+  // option 2: try to match; I think the logics here are at least in part broken
+  if ((char)buf[3] == '2') {
     _pressure_unit = INH2O;
-    _pressure_unit_name = "inH2O";
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
-    if (buf[RSC_PRESSURE_UNIT_LEN - 4] == 'K') {
+    strncpy(_pressure_unit_name, "inH20", name_buff_sizes);
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
+    if ((char)buf[RSC_PRESSURE_UNIT_LEN - 4] == 'K') {
       _pressure_unit = KPASCAL;
-      _pressure_unit_name = "kilopascal";
-    } else if (buf[RSC_PRESSURE_UNIT_LEN - 4] == 'M') {
+      strncpy(_pressure_unit_name, "kilopascal", name_buff_sizes);
+    } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 4] == 'M') {
       _pressure_unit = MPASCAL;
-      _pressure_unit_name = "megapascal";
+      strncpy(_pressure_unit_name, "megapascal", name_buff_sizes);
     } else {
       _pressure_unit = PASCAL;
-      _pressure_unit_name = "pascal";
+      strncpy(_pressure_unit_name, "pascal", name_buff_sizes);
     }
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'r') {
-    if (buf[RSC_PRESSURE_UNIT_LEN - 5] == 'm') {
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'r') {
+    if ((char)buf[RSC_PRESSURE_UNIT_LEN - 5] == 'm') {
       _pressure_unit = mBAR;
-      _pressure_unit_name = "millibar";
+      strncpy(_pressure_unit_name, "millibar", name_buff_sizes);
     } else {
       _pressure_unit = BAR;
-      _pressure_unit_name = "bar";
+      strncpy(_pressure_unit_name, "bar", name_buff_sizes);
     }
-  } else if (buf[RSC_PRESSURE_UNIT_LEN - 2] == 'i') {
+  } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'i') {
     _pressure_unit = PSI;
-    _pressure_unit_name = "psi";
+    strncpy(_pressure_unit_name, "psi", name_buff_sizes);
   }
+
+  Serial.println(F("DBG: content of _pressure_unit_name: "));
+  print_array_from_memory(&(_pressure_unit_name[0]), name_buff_sizes);
 }
 
 void Honeywell_RSC::get_pressure_type() {
-  char buf[RSC_SENSOR_TYPE_LEN];
+  unsigned char buf[RSC_SENSOR_TYPE_LEN];
   eeprom_read(RSC_PRESSURE_REFERENCE, RSC_SENSOR_TYPE_LEN, buf);
+
+  Serial.println(F("DBG: content of buf from eeprom_read of sensor type: "));
+  print_array_from_memory((char const * const)&(buf[0]), RSC_SENSOR_TYPE_LEN);
+
   switch (buf[0]) {
     case 'D':
       _pressure_type = DIFFERENTIAL;
-      _pressure_type_name = "differential";
+      strncpy(_pressure_type_name, "differential", name_buff_sizes);
       break;
     case 'A':
       _pressure_type = ABSOLUTE;
-      _pressure_type_name = "absolute";
+      strncpy(_pressure_type_name, "absolute", name_buff_sizes);
       break;
     case 'G':
       _pressure_type = GAUGE;
-      _pressure_type_name = "gauge";
+      strncpy(_pressure_type_name, "gauge", name_buff_sizes);
       break;
     default:
       _pressure_type = DIFFERENTIAL;
-      _pressure_type_name = "differential";
+      strncpy(_pressure_type_name, "differential", name_buff_sizes);
   }
+
+  Serial.println(F("DBG: content of _pressure_type_name: "));
+  print_array_from_memory(&(_pressure_type_name[0]), name_buff_sizes);
 }
 
 void Honeywell_RSC::get_coefficients() {
@@ -406,16 +426,16 @@ void Honeywell_RSC::set_mode(RSC_MODE mode) {
   switch (mode) {
     case NORMAL_MODE:
       if (_data_rate < N_DR_20_SPS || _data_rate > N_DR_1000_SPS) {
-        Serial.println("RSC: Normal mode not supported with the current selection of data rate\n");
-        Serial.println("RSC: You will see erronous readings\n");
+        Serial.println(F("RSC: Normal mode not supported with the current selection of data rate\n"));
+        Serial.println(F("RSC: You will see erronous readings\n"));
         l_mode = NA_MODE;
       } else
         l_mode = NORMAL_MODE;
       break;
     case FAST_MODE:
       if (_data_rate < F_DR_40_SPS || _data_rate > F_DR_2000_SPS) {
-        Serial.println("RSC: Fast mode not supported with the current selection of data rate\n");
-        Serial.println("RSC: You will see erronous readings\n");
+        Serial.println(F("RSC: Fast mode not supported with the current selection of data rate\n"));
+        Serial.println(F("RSC: You will see erronous readings\n"));
         l_mode = NA_MODE;
       } else
         l_mode = FAST_MODE;
@@ -432,4 +452,37 @@ void Honeywell_RSC::setup_adc(uint8_t* adc_init_values) {
   adc_write(0, 5, command);
   delay(5);
 }
+
+void Honeywell_RSC::print_catalog_listing(void){
+  Serial.print(F("catalog_listing: "));
+  for (size_t i=0; i<RSC_SENSOR_NAME_LEN; i++){
+    Serial.print((char)(_catalog_listing[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_serial_number(void){
+  Serial.print(F("serial_number: "));
+  for (size_t i=0; i<RSC_SENSOR_NUMBER_LEN; i++){
+    Serial.print((char)(_serial_number[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_pressure_unit_name(void){
+  Serial.print(F("pressure_unit: "));
+  for (size_t i=0; i<name_buff_sizes; i++){
+    Serial.print((char)(_pressure_unit_name[i]));
+  }
+  Serial.println();
+}
+
+void Honeywell_RSC::print_pressure_type_name(void){
+  Serial.print(F("pressure_type_name: "));
+  for (size_t i=0; i<name_buff_sizes; i++){
+    Serial.print((char)(_pressure_type_name[i]));
+  }
+  Serial.println();
+}
+
 
