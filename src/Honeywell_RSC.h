@@ -10,7 +10,7 @@ class Honeywell_RSC {
 public:
   Honeywell_RSC(int drdy_pin, int cs_ee_pin, int cs_adc_pin);
 
-  void init();
+  void init(RSC_DATA_RATE dr = N_DR_20_SPS, RSC_MODE mode = NORMAL_MODE);
 
   // chip selection
   void select_eeprom();
@@ -38,6 +38,7 @@ public:
   void adc_write(uint8_t reg, uint8_t num_bytes, uint8_t *data);
 
   // other ADC related functions
+  void reset_adc();
   void setup_adc(uint8_t* adc_init_values);
   void add_dr_delay();
   

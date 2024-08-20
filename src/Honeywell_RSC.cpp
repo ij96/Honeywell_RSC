@@ -14,7 +14,7 @@ Honeywell_RSC::Honeywell_RSC(int drdy_pin, int cs_ee_pin, int cs_adc_pin) {
   digitalWrite(_cs_adc_pin, HIGH);
 }
 
-void Honeywell_RSC::init() {
+void Honeywell_RSC::init(RSC_DATA_RATE data_rate, RSC_MODE mode) {
   // read and store constants from EEPROM
   get_catalog_listing();
   get_serial_number();
@@ -30,8 +30,8 @@ void Honeywell_RSC::init() {
 
   get_coefficients();
 
-  set_data_rate(N_DR_20_SPS);
-  set_mode(NORMAL_MODE);
+  set_data_rate(data_rate);
+  set_mode(mode);
   delay(5);
 
 }
@@ -134,7 +134,12 @@ void Honeywell_RSC::get_pressure_unit() {
   }
 
   // option 2: try to match; I think the logics here are at least in part broken
-  if ((char)buf[3] == '2') {
+  if ((char)buf[0] == 'd')  // Based purely on what is returned by the test unit which is RSCDJJM250MDSE3 that is specced in mBar
+  {
+      _pressure_unit = mBAR;
+      strncpy(_pressure_unit_name, "millibar", name_buff_sizes);
+  } else if ((char)buf[3] == '2') 
+  {
     _pressure_unit = INH2O;
     strncpy(_pressure_unit_name, "inH20", name_buff_sizes);
   } else if ((char)buf[RSC_PRESSURE_UNIT_LEN - 2] == 'a') {
@@ -271,18 +276,46 @@ float Honeywell_RSC::get_temperature() {
 
   adc_read(TEMPERATURE, sec_arr);
 
-  // first 14 bits represent temperature
-  // following 10 bits are random thus discarded
-  _t_raw = (((int32_t)sec_arr[0] << 8) | (int32_t)sec_arr[1]) >> 2;
-  float temp = _t_raw * 0.03125;
+  // Simple non-signed version. This is the original code.
+  // // first 14 bits represent temperature
+  // // following 10 bits are random thus discarded
+  // _t_raw = (((int32_t)sec_arr[0] << 6) | (int32_t)sec_arr[1]) >> 2;
+  // float temp = _t_raw * 0.03125;
+  // return temp;
 
-  return temp;
+  // Better version that handles signed values
+  // Combine the 3 bytes into a single 24-bit number
+  uint32_t raw = ((uint32_t)sec_arr[0] << 16) | ((uint32_t)sec_arr[1] << 8) | (uint32_t)sec_arr[2];
+  
+  // Extract only the relevant 14 bits by shifting right by 10
+  uint16_t relevant_bits = (raw >> 10) & 0x3FFF; // 0x3FFF is the mask to extract 14 bits
+
+  // Initialize temperature variable
+  float temperature;
+
+  // Check MSB to determine if the temperature is positive or negative
+  if ((relevant_bits & (1 << 13)) == 0) {
+    // MSB = 0, positive temperature
+    _t_raw = relevant_bits;
+    temperature = static_cast<float>(relevant_bits) * 0.03125f;
+  } else {
+    // MSB = 1, negative temperature
+    relevant_bits = ~relevant_bits + 1;
+    _t_raw = relevant_bits;
+    temperature = static_cast<float>(relevant_bits & 0x3FFF) * -0.03125f; // Mask again to keep within 14 bits
+  }
+
+  return temperature;
 }
 
 float Honeywell_RSC::get_pressure() {
-  // reads uncompensated pressure from ADC, then use temperature reading to convert it to compensated pressure
+  // reads uncompensated pressure from ADC, then use temperature reading
+  // to convert it to compensated pressure
   // refer to datasheet section 3.6 ADC Programming and Read Sequence – Pressure Reading
-
+  //
+  // Warning: make sure you have called get_temperature() before calling this function
+  
+  
   // read the 24 bits uncompensated pressure
   uint8_t sec_arr[3] = {0};
   adc_read(PRESSURE, sec_arr);
@@ -342,7 +375,22 @@ void Honeywell_RSC::adc_write(uint8_t reg, uint8_t num_bytes, uint8_t* data) {
   deselect_adc();
 }
 
-void Honeywell_RSC::add_dr_delay() {
+void Honeywell_RSC::reset_adc() 
+{
+  // send Reset command
+  select_adc();
+  SPI.transfer(RSC_ADC_RESET_COMMAND);
+  deselect_adc();
+}
+
+/**
+ * @brief Adds a delay based on the current data rate.
+ * 
+ * This function calculates the delay duration based on the current data rate and adds a delay of that duration plus 2 milliseconds.
+ * 
+ */
+void Honeywell_RSC::add_dr_delay() 
+{
   float delay_duration = 0;
   // calculating delay based on the Data Rate
   switch (_data_rate) {
@@ -448,8 +496,14 @@ void Honeywell_RSC::set_mode(RSC_MODE mode) {
 
 void Honeywell_RSC::setup_adc(uint8_t* adc_init_values) {
   // refer to datasheet section 3.4 ADC Programming Sequence – Power Up
-  uint8_t command[5] = {RSC_ADC_RESET_COMMAND, adc_init_values[0], adc_init_values[1], adc_init_values[2], adc_init_values[3]};
-  adc_write(0, 5, command);
+  
+  // send Reset command
+  reset_adc();
+  delay(5);
+
+  // send WREG command with 4 init values from EEPROM to configure ADC 
+  uint8_t command[4] = {adc_init_values[0], adc_init_values[1], adc_init_values[2], adc_init_values[3]};
+  adc_write(0, 4, command);
   delay(5);
 }
 
